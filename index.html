@@ -132,9 +132,13 @@
         return groupedInputs;
     }
 
-    function removeRow(code)
+    function removeRow(element)
     {
-        $('#' + code).remove();
+        var nearestRoot = element.closest('.root');
+            
+            if (nearestRoot.length > 0) {
+                nearestRoot.remove()
+            }
     }
 
     function formReset()
@@ -231,11 +235,11 @@
                     let code = $(data[0]).text()
                     let name = $(data[1]).text()
 
-                    let html = `<div class="row" id="${code}">
+                    let html = `<div class="row root" id="${code}">
                         <div class="col-12 mb-2">
                             <div class="row">
                                 <div class="col-1">
-                                    <label class="text-red" data-id="${code}" onclick="removeRow('${code}')"> Xóa </label>
+                                    <label class="text-red" data-id="${code}" onclick="removeRow($(this))"> Xóa </label>
                                 </div>
                                 <div class="col-3">
                                     <label>Mã: </label>
