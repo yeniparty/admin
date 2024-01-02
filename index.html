@@ -57,24 +57,25 @@
                 </div>
                 <div class="row mb-2">
                     <div class="col-3">
-                        <label>Tổng tiền: </label>
-                    </div>
-                    <div class="col-6">
-                        <input type="text" class="form-control" id="total_order" name="total_order" value="" autocomplete="off"/>
-                    </div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-3">
                         <label>Ghi chú: </label>
                     </div>
                     <div class="col-6">
                         <input type="text" class="form-control" id="note" name="note" value="" autocomplete="off"/>
                     </div>
                 </div>
+                <div class="row mb-2">
+                    <div class="col-3">
+                        <label>Tổng tiền: </label>
+                    </div>
+                    <div class="col-6">
+                        <input type="text" class="form-control" id="total_order" name="total_order" value="" autocomplete="off"/>
+                    </div>
+                </div>
             </div>
         </div>
         <form id="form_item" action="" name="form_item">
             <div id="selectedInfo" class="mb-2"></div>
+            <div class="mb-2">Tổng tiền hàng: <label id="total_orders"></label></div>
         </form>
         <div class="row mb-2">
             <div class="col-6" style="display:flex;justify-content: flex-start">
@@ -110,6 +111,7 @@
     })();
 </script>
 <script type="text/javascript" src="product.js"></script>
+<script type="text/javascript" src="common.js"></script>
 
 <script>
     function exportToExcel(file_name) {
@@ -191,6 +193,7 @@
     $(document).ready(function() {
                 let html = ""
                 let productHtml = ""
+                let total_price_product = 0
                 Object.keys(productJson).forEach(key => {
                     let product = productJson[key];
 
@@ -264,11 +267,13 @@
                                     <label>Tên: </label>
                                     <input type="text" class="form-control" name="name" value="${name}" />
                                 </div>
-                                <div class="col-1">
-                                </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <label>Số lượng: </label>
-                                    <input type="number" class="form-control" name="quantity" value="" />
+                                    <input type="number" class="form-control qty" name="quantity" value="" />
+                                </div>
+                                <div class="col-2">
+                                    <label>Giá tiền: </label>
+                                    <input type="text" class="form-control price" name="price" value="" />
                                 </div>
                             </div>
                         </div>
@@ -276,6 +281,29 @@
                     </div>`
 
                     $('#selectedInfo').append(html)
+                    $('.price').change(function()
+                    {
+                        total_price_product = 0
+                        $('.price').each(function (index)
+                        {
+                            let row = $(this).closest('div.row');
+                            let qtyInput  = row.find('.qty').val()
+                            total_price_product += (parseFloat($(this).val()) * parseFloat(qtyInput))
+                        });
+                        $('#total_orders').text(gFormatCurrency(total_price_product, "VND"))
+                    })
+
+                    $('.qty').change(function()
+                    {
+                        total_price_product = 0
+                        $('.qty').each(function (index)
+                        {
+                            let row = $(this).closest('div.row');
+                            let qtyInput  = row.find('.price').val()
+                            total_price_product += (parseFloat($(this).val()) * parseFloat(qtyInput))
+                        });
+                        $('#total_orders').text(gFormatCurrency(total_price_product, "VND"))
+                    })
 
                 });
         //reset
@@ -291,35 +319,34 @@
             let addr = $('#addr').val()
             let total_order = $('#total_order').val()
             let note = $('#note').val()
-            let array_info = [full_name, phone, addr, total_order, note]
+            let array_info = ["Tên: " + full_name, "ĐT: " +phone, "Địa chỉ: " + addr, "Tạm tính: " + gFormatCurrency(total_price_product, "VND"), "Ghi chú: " + note, "Tổng tiền: " + total_order]
             let serializedArray = $("form").serializeArray();
             let groupedInputs = groupByName(serializedArray);
             let code_array = groupedInputs['code']
             let qty_array = groupedInputs['quantity']
             let name_array = groupedInputs['name']
+            let price_array = groupedInputs['price']
             if(code_array != null && code_array.length > 0)
             {
-                html = `<table id="table_export" style="border-collapse: collapse; width: 100%;" border="1"><colgroup><col style="width: 5%;"><col style="width: 10%;"><col style="width: 50%;"><col style="width: 5%;"><col style="width: 20%;"></colgroup>
+                html = `<table id="table_export" style="border-collapse: collapse; width: 100%;" border="1"><colgroup><col style="width: 25%;"><col style="width: 10%;"><col style="width: 40%;"><col style="width: 10%;"><col style="width: 15%;"></colgroup>
                         <tbody>
                         <tr>
-                        <td>Số thứ tự</td>
+                        <td>Thông tin</td>
                         <td>Mã hàng</td>
                         <td>Tên hàng</td>
                         <td>Số lượng</td>
-                        <td>Thông tin</td>
+                        <td>Giá tiền</td>
                         </tr>`;
-                let count = 1
                 if(code_array.length > array_info.length)
                 {
                     code_array.forEach(function(element, index) {
                     html += `<tr>
-                            <td>${count}</td>
+                            <td>${array_info[index]}</td>
                             <td>${element}</td>
                             <td>${name_array[index]}</td>
                             <td>${qty_array[index]}</td>
-                            <td>${array_info[index]}</td>
+                            <td>${price_array[index]}</td>
                         </tr>`
-                    count++
                     });
                 }else{
                     array_info.forEach(function(element, index) {
@@ -329,15 +356,15 @@
                         code_array[index] = ""
                         name_array[index] = ""
                         qty_array[index] = ""
+                        price_array[index] = ""
                     }
                     html += `<tr>
-                            <td>${count}</td>
+                            <td>${element}</td>
                             <td>${code_array[index]}</td>
                             <td>${name_array[index]}</td>
                             <td>${qty_array[index]}</td>
-                            <td>${element}</td>
+                            <td>${price_array[index]}</td>
                         </tr>`
-                    count++
                     });
                 }
                 
@@ -355,10 +382,12 @@
                 customer_name: full_name,
                 customer_phone: phone,
                 customer_addr: addr,
-                customer_total: gFormatCurrency(total_order, "VND"),
+                customer_total: total_order,
                 customer_note: note,
                 message: html,
                 customer_date: showToday(),
+                to_email: "yeniparty0923@gmail.com",
+                // to_email: "bavuongbui@gmail.com",
             };
 
             emailjs.send('service_wc467ip', 'template_zfvbd5n', templateParams)
