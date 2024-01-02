@@ -243,7 +243,9 @@
 
                 });
 
-                let table = new DataTable('#dataTable');
+                let table = new DataTable('#dataTable', {
+
+                });
                 $('#dataTable tbody tr').hover(function(){
                     $(this).css('cursor', "pointer")
                 })
@@ -328,7 +330,7 @@
             let price_array = groupedInputs['price']
             if(code_array != null && code_array.length > 0)
             {
-                html = `<table id="table_export" style="border-collapse: collapse; width: 100%;" border="1"><colgroup><col style="width: 25%;"><col style="width: 10%;"><col style="width: 40%;"><col style="width: 10%;"><col style="width: 15%;"></colgroup>
+                html = `<table id="table_export" style="border-collapse: collapse; width: 100%;" border="1"><colgroup><col style="width: 20%;"><col style="width: 10%;"><col style="width: 30%;"><col style="width: 10%;"><col style="width: 15%;"><col style="width: 15%;"><col style="width: 15%;"></colgroup>
                         <tbody>
                         <tr>
                         <td>Thông tin</td>
@@ -336,6 +338,7 @@
                         <td>Tên hàng</td>
                         <td>Số lượng</td>
                         <td>Giá tiền</td>
+                        <td>Thành tiền</td>
                         </tr>`;
                 if(code_array.length > array_info.length)
                 {
@@ -346,24 +349,30 @@
                             <td>${name_array[index]}</td>
                             <td>${qty_array[index]}</td>
                             <td>${price_array[index]}</td>
+                            <td>${gFormatCurrency(price_array[index] * qty_array[index], "VND")}</td>
                         </tr>`
                     });
                 }else{
                     array_info.forEach(function(element, index) {
-                
+                    let text_total = ""
                     if(code_array[index] == null)
                     {
                         code_array[index] = ""
                         name_array[index] = ""
                         qty_array[index] = ""
                         price_array[index] = ""
+                        text_total = ""
+                    }else{
+                        text_total = gFormatCurrency(price_array[index] * qty_array[index], "VND")
                     }
+
                     html += `<tr>
                             <td>${element}</td>
                             <td>${code_array[index]}</td>
                             <td>${name_array[index]}</td>
                             <td>${qty_array[index]}</td>
                             <td>${price_array[index]}</td>
+                            <td>${text_total}</td>
                         </tr>`
                     });
                 }
@@ -386,8 +395,8 @@
                 customer_note: note,
                 message: html,
                 customer_date: showToday(),
-                to_email: "yeniparty0923@gmail.com",
-                // to_email: "bavuongbui@gmail.com",
+                // to_email: "yeniparty0923@gmail.com",
+                to_email: "bavuongbui@gmail.com",
             };
 
             emailjs.send('service_wc467ip', 'template_zfvbd5n', templateParams)
@@ -396,8 +405,10 @@
                     $('#send_form').text("Gửi")
                     $('#selectedInfo').html("")
                     formReset()
+                    $('#table_export').remove()
                 }, function(error) {
                     $('#send_form').text("Gửi")
+                    $('#table_export').remove()
                     alert('Gửi mail thất bại, alo kĩ thuật nhen...', error);
                 });
         })
